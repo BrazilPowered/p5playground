@@ -41,7 +41,6 @@ class Spinner{
         }else{
             this.rmWinner = false;
         }
-        this.toRemove = null;
 
     }
     calcSliceInnerAngle(){

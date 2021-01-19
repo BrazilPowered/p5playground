@@ -5,4 +5,11 @@ html, body {
 canvas {
   display: block;
 }
-
+input[type=checkbox] {
+  position: relative;
+  cursor: pointer;
+}
+input[type=range] {
+  position: relative;
+  cursor: pointer;
+}

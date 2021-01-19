@@ -4,9 +4,10 @@ var loadLabelButton;
 var labelFile;
 var labels    =[];
 
-let maxSpeed =.5;
+let maxSpeed = 1;
+let bestSpeed=.15//.5;
 let maxBrakeSpeed=.1;
-let brakeSpeed=.03//.01;
+let brakeSpeed=.015;//.03;
 
 var longest;        //will be set to the length of the longest side of the window
 var spinner;
@@ -100,7 +101,8 @@ function preload(){
 function setup() {
   loadLabelButton=createFileInput(loadLabels);
   loadLabelButton.position(20,20);
-  //labels.reverse();
+  labels.reverse();
+  
 
   if(labels.length != null && labels.length > 0){
     slices=labels.length;
@@ -108,11 +110,21 @@ function setup() {
     slices=10;
   }
   if(specialControls){
-//    sliderSlices = createSlider(0,maxSlices,slices,1);                          //Default is 2
-    sliderSpeed  = createSlider(0.005,maxSpeed,maxSpeed,.005);           //Default speed is
-    sliderBrakeSpeed= createSlider(0.005,maxBrakeSpeed,brakeSpeed,.005);        //Default speed is
-    toggleRemoves= createCheckbox("Remove Winning Names?",true);        //Default speed is
     slidersVisualOffset=30;
+    controlsY=windowHeight-slidersVisualOffset;
+    let slidersDiv = createDiv();                                //Adding Sliders to a single div
+//    sliderSlices = createSlider(0,maxSlices,slices,1);                          //Default is 2
+    sliderSpeed  = createSlider(0.005,maxSpeed,bestSpeed,.005);                  //Default speed is
+    sliderSpeed.parent(slidersDiv);                                            //add to controls div
+    sliderBrakeSpeed= createSlider(0.005,maxBrakeSpeed,brakeSpeed,.005);        //Default speed is
+    sliderBrakeSpeed.parent(slidersDiv);
+    toggleRemoves= createCheckbox("Remove Winners?",false);        //Default speed is
+    //TODO: Add css to make all three controls in controlsDiv on same line UNLESS screen too small
+    slidersDiv.style('float:left')
+    toggleRemoves.style('float:left');
+
+    //toggleRemoves.position(sliderSpeed.width+sliderBrakeSpeed.width,controlsY);
+    //toggleRemoves.size(20,20)
   }else{
     slidersVisualOffset=0;
   }
@@ -157,6 +169,11 @@ function draw() {
 function click_event(){
   //if(loadLabelButton.mousePressed()){
   //////console.log("here"+ (!spinner.isSpinning())+" "+spinner.rmWinner);
+  if(toggleRemoves.checked()){
+    spinner.rmWinner=true;
+  }else{
+    spinner.rmWinner=false;
+  }
   if(!spinner.isSpinning() && spinner.rmWinner==true){
     console.log(spinner.names);
     console.log(spinner.nearestSliceToPointer());
@@ -183,6 +200,8 @@ function loadLabels(file){
       labels.splice(i,1);
     }
   }
+  //Always add the Click to Spin tile && pass true to remove it on first spin.
+  //Let normal checks handle winner removal after that.
   labels.unshift("Click to Spin!");
   spinner = new Spinner(spinnerSize,labels.length,labels,maxSpeed,true);
 }

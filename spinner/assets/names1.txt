@@ -4,5 +4,6 @@ list
 of
 names
 with 
-that
+top-corner
 button.
+Click to Spin! Or...
