@@ -2,19 +2,22 @@
 //takes in one string representing the edge: LEFT RIGHT TOP BOTTOM
 class EdgePaddle{
     constructor(edge){
-        //TODO: scale values proportionally with 'width' and 'height
-        //24 is a good width
-        var paddleWidth = 24
-        var paddleHeight= paddleWidth*4;
+        this.edge=edge.toUpperCase();
+        
+        var longside; //24 is a good width
+        if(height>width){
+            longside=height/12;
+        }else{
+            longside=width/12;
+        }
+        var shortside = longside/4;
         var xPos,yPos;
 
-
-        this.edge=edge.toUpperCase();
         
         
         if(this.edge == "LEFT" || this.edge == "RIGHT"){
-            this.width =paddleWidth;
-            this.height=paddleHeight
+            this.width =shortside;
+            this.height=longside;
             if(this.edge=="LEFT"){
                 xPos=   0   + this.width;
                 yPos= height/2;
@@ -23,8 +26,8 @@ class EdgePaddle{
                 yPos= height/2;
             }
         }else if(this.edge == "TOP" || this.edge == "BOTTOM"){
-            this.width =paddleHeight;
-            this.height=paddleWidth;
+            this.width =longside;
+            this.height=shortside;
             if(this.edge == "TOP"){
                 xPos= width/2;
                 yPos=   0   + this.height;
@@ -57,8 +60,28 @@ class EdgePaddle{
 
     //bounces puck according to perfect vector angle from center of paddle to center of puck on-impact
     reflect(puck){
-        //get the new vel angle by subtracting puck & paddle angle vectors
-        puck.vel=p5.Vector.sub(puck.pos,this.pos,);
+        //get the 180-degree angle vector by subtracting puck & paddle angle vectors
+        var angleToCenterPaddle =p5.Vector.sub(puck.pos,this.pos);
+        
+        ///////////////Cut angle in 2 for a max -45to45-degree return ////////////////
+        /////////////otherwise, set puck.vel equal to angleToCenterPaddle/////////////
+        var origin              = createVector(1,0);
+        var returnAngle         = -(angleToCenterPaddle.angleBetween(origin));
+        if(this.edge=="LEFT"){
+            returnAngle=map(returnAngle,-PI/2,PI/2,-PI/4,PI/4);
+            puck.vel = p5.Vector.fromAngle(returnAngle);
+        }else if(this.edge=="RIGHT"){
+            if(returnAngle >= 0){
+                returnAngle=map(returnAngle,PI/2,PI,3*PI/4,PI);
+            }else if (returnAngle < 0){
+                returnAngle=map(returnAngle,-PI/2,-PI,-3*PI/4,-PI);
+            }
+            puck.vel = p5.Vector.fromAngle(returnAngle);
+        }else{
+            puck.vel=angleToCenterPaddle;
+        }
+        puck.vel = p5.Vector.fromAngle(returnAngle);
+        //////////////////////////////////////////////////////////////////////////////
         puck.vel.setMag(puck.speed);
     }
 

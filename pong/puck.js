@@ -4,24 +4,37 @@ class Puck{
         this.pos;           //position (vector)
         this.vel;           //velocity (vector)
         this.reset();       //...to initialize above values
-        this.diameter = 24; //How big around?
-        this.radius   = this.diameter/2;
+
+         //How big around?
+        if(height>width){
+            this.diameter = height/40;
+        }else{
+            this.diameter = width/40;
+        }
+        this.radius = this.diameter/2;
     }
 
     show(){
         fill(255);
-        circle(this.pos.x,this.pos.y, this.radius*2);
+        circle(this.pos.x,this.pos.y, this.diameter);
     }
 
     update(){
         this.pos.add(this.vel);
-        this.checkTopBottomWalls();
-    }
-
-    checkTopBottomWalls(){
-        if(this.pos.y < this.radius || this.pos.y > height-this.radius){
+        if(this.hittingTopBottomWalls()){
             this.reflect(true);
         }
+    }
+
+    hittingTopBottomWalls(){
+        if(this.pos.y < this.radius){
+            this.pos.y=this.radius;          //prevents the snowman wall-walk effect bug
+            return true;
+        }else if(this.pos.y > height-this.radius){
+            this.pos.y=height-this.radius;   //prevents the snowman wall-walk effect bug
+            return true;
+        }//else
+        return false;
     }
 
     //returns true if scoring
@@ -29,7 +42,6 @@ class Puck{
         if(this.pos.x > this.radius && this.pos.x < width-this.radius){
             return false;
         }//else
-        winningSound.play();
         return true;
     }
 
@@ -47,12 +59,13 @@ class Puck{
 
     //check if touching paddle: 'paddle'
     hits(paddle){
-        //we only care about x, so puck.y will be constant for this check
         var puckHeight=this.pos.y;
         var d = dist(this.pos.x,puckHeight, paddle.pos.x,puckHeight);
+        //we only care about x, so puck.y will be constant for this check
         if(d < this.radius+(paddle.width/2)){  
-            if(puckHeight < paddle.pos.y+(paddle.height/2) && 
-               puckHeight > paddle.pos.y-(paddle.height/2)){
+            //Then check if within the bounds of the paddle && an extar cushion for puck radius
+            if(puckHeight < paddle.pos.y+(paddle.height/2) + this.radius && 
+               puckHeight > paddle.pos.y-(paddle.height/2) - this.radius){
                 bloop.play();
                 return true;
            }

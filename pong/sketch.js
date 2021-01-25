@@ -8,11 +8,20 @@ var rightGoalLine;     //xPosition of Right Goal
 var paddlesSpeeed;  //How fast should the paddle move on any key press?
 var puckSpeed;      //puck speed
 var scoreSize;       //How big should the score appear?
+var scoreToWin;
+var scoreSlider;    //controls how many points to win
+
+//standard text sizes
+var textLarge=32;
+var textMed  =24;
+var textSmall=16;
+var textTiny =8;
 
 //sounds
 var hoorayStart;
 var bloop;
 var winningSound;
+
 
 function preload(){
     //sounds
@@ -20,19 +29,22 @@ function preload(){
     hoorayStart = loadSound("assets/HoorayStart");
     hoorayStart.playMode("untilDone");
     bloop       = loadSound("assets/bloop");
-    winningSound= loadSound("assets/Success_Glockenspiel");
+    winningSoundLeft = loadSound("assets/Success_Glockenspiel");
+    winningSoundRight= loadSound("assets/coin_double_trill");
 }
 
 function setup(){
     var canvas = createCanvas(windowWidth, windowHeight);
     puckSpeed=0;
     puck=new Puck(puckSpeed);
-    paddleWidth  = 24;
+    //paddleWidth  = 24;
     paddleLeft = new EdgePaddle("LEFT");
     paddleRight= new EdgePaddle("RIGHT");
     paddlesSpeed=8;
     scoreSize=48;
-
+    scoreToWin=20;
+    //TODO: Make it so the window isn't sliding up and down because of slider
+    scoreSlider = createSlider(1,50,scoreToWin,1); 
 }
 
 function draw(){
@@ -45,9 +57,10 @@ function draw(){
     paddleRight.show();
     puck.show();
 
+    //TODO: allow puck to reflect off paddle if ANY part of puck radius touches paddle top.
     if(puck.hits(paddleLeft)){
         paddleLeft.reflect(puck);
-        puck.vel.setMag(puck.speed+paddleLeft.score);
+        puck.vel.setMag(puck.speed+paddleRight.score);
     }else if (puck.hits(paddleRight)){
         paddleRight.reflect(puck);
         puck.vel.setMag(puck.speed+paddleLeft.score);
@@ -58,9 +71,11 @@ function draw(){
     if(puck.isScoring()){
         if(puck.pos.x < puck.diameter){//is on Left side
             paddleRight.score++;
+            winningSoundRight.play();
         }
         else if(puck.pos.x > width-puck.diameter){    //is on Right side
             paddleLeft.score++;
+            winningSoundLeft.play();
         }
         puck.reset();
     }
@@ -68,7 +83,44 @@ function draw(){
     fill(255);
     textSize(scoreSize)
     text(paddleLeft.score,width/2-scoreSize*2,scoreSize);
-    text(paddleRight.score,width/2+scoreSize*2,scoreSize)
+    text(paddleRight.score,width/2+scoreSize*2,scoreSize);
+    
+    scoreToWin=scoreSlider.value();
+    tryToWin();
+}
+
+function tryToWin(){
+    if(paddleLeft.score >= scoreToWin){
+        showWinner(paddleLeft);
+    }else if ( paddleRight.score >= scoreToWin ){
+        showWinner(paddleRight);
+    }//else do nothing
+}
+
+function showWinner(paddle){
+    push();
+    rectMode(CENTER);
+    textAlign(CENTER);
+    textSize(textLarge);
+    rect(width/2,height/2,textLarge*18,textLarge*4,8);
+    fill(0);
+    text("Winner: YOU!!!!!",width/2,(height/2)-textLarge);
+    textSize(textSmall);
+    text("(on the "+paddle.edge.toLowerCase()+")",width/2,height/2);
+    textSize(textMed);
+    text("Click for a new game",width/2,(height/2)+textLarge+textMed);
+    pop();
+    var winnerSound;
+    if(paddle.edge == "RIGHT"){
+        winnerSound=winningSoundRight;
+    }else if(paddle.edge == "LEFT"){
+        winnerSound=winningSoundLeft;
+    }
+    //TODO: Add some fanfare sound or play the winner sound 3x
+    winnerSound.play();
+    
+
+    noLoop();
 
 }
 
@@ -123,10 +175,12 @@ function keyReleased(){
 }
 
 function mouseReleased(){
-    setup();
+    hoorayStart.play();
+    loop();
     //workaround so song will play before first play round...
     //we have to both set puck speed AND reset it for vel to work
-    puck.speed=10;
+    puck.speed=15;
     puck.reset();
-    hoorayStart.play();
+    paddleRight.score=0;
+    paddleLeft.score=0;
 }
