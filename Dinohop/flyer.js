@@ -1,0 +1,6 @@
+class Flyer{
+    constructor(){
+
+    }
+    
+}
