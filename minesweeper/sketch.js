@@ -126,7 +126,7 @@ function gameOver(status){
     noLoop();
 }
 
-///////////grid
+///////////TODO: make a class for the grid
 function scatterSurprises(num){
     for(i=num;i>0;i--){
         var x,y;
@@ -150,17 +150,19 @@ function alertNeighborCells(x,y){
 //if true, returns neighbors from cardnial directions(up,down,left,right)
 //if false or blank (null), returns complete list in a 1-layer square around cell
 function findNeighborCells(x,y,ord){
-    var validNeighbors=[];
-    for(var i = x-1; i <= x+1; i++){
-        if(i<0 || i>= grid.length){           //ouside grid array indices
-            continue;
-        }else{
-            for(var j = y-1; j <= y+1; j++){
-                if(j<0 || j>=grid[x].length   //outside grid array indices
-                       || (j==y && i==x)) {   //not this cell itself
+    var validNeighbors=[];                      //store all neightbors here
+    for(var i = x-1; i <= x+1; i++){            //for x-1 through x+1
+        if(i<0 || i>= grid.length){             //skip all cells ouside grid array indices
+            continue;   
+        }else{                                  //else if within grid bounds:
+            for(var j = y-1; j <= y+1; j++){        //for y-1 through y+1
+                if(j<0 || j>=grid[x].length         //skip all cells outside grid array indices
+                    || (j==y && i==x)) {            //...& this cell itself
                     continue;
+                }else if(ord && i!=x && j!=y){      //if ordinal, also exclude all four
+                    continue;                       //corner neighbors
                 }else{
-                    validNeighbors.push([i,j]);
+                    validNeighbors.push([i,j]);     //If here, add this valid (or ordinal) neighbor
                 }
             }
         }
@@ -168,12 +170,14 @@ function findNeighborCells(x,y,ord){
     return validNeighbors;
 }
 
+
 function reveal(cell){
+    var ordinal=true;                           //make this false to use ALL 8 neighbors vs NSEW
     cell.reveal();
     if(cell.proximity == 0 && !cell.surprise){
         //uncover valid 0-labelled neighbors
         xy=getIndexFromCell(cell);
-        var neighbors=findNeighborCells(xy[0],xy[1]);
+        var neighbors=findNeighborCells(xy[0],xy[1],ordinal);
         neighbors.forEach(pair =>{
             var neighbor=grid[pair[0]][pair[1]];
             if(neighbor.revealed==false && !neighbor.isFlagged()){
